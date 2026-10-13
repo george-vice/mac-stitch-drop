@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mac Stitch Drop: send embroidery designs from your Mac to your Brother machine</title>
+<meta name="description" content="Free, open-source tools to send embroidery designs from macOS to Brother Wi-Fi embroidery machines: right-click in Finder, send from Ink/Stitch, a Dock app, or the command line.">
+<meta property="og:title" content="Mac Stitch Drop">
+<meta property="og:description" content="Send embroidery designs from your Mac to your Brother machine over Wi-Fi.">
+<meta property="og:image" content="https://george-vice.github.io/mac-stitch-drop/img/icon.png">
+<link rel="icon" href="img/icon-256.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --linen: #EEF2EE;
+  --linen-2: #E2E9E3;
+  --paper: #F8FAF8;
+  --spool: #1E5A4B;
+  --spool-ink: #174A3D;
+  --thread: #C8323B;
+  --wood: #D7AA74;
+  --wood-dark: #B5844F;
+  --ink: #16231E;
+  --ink-2: #4A5A53;
+  --rule: #C9D4CC;
+  --code-bg: #16231E;
+  --code-ink: #E6EFE9;
+  --focus: #C8323B;
+  --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "Barlow", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --linen: #111A16;
+    --linen-2: #17231E;
+    --paper: #1B2923;
+    --spool: #7CC3A8;
+    --spool-ink: #9AD4BD;
+    --thread: #F0646B;
+    --wood: #D7AA74;
+    --wood-dark: #A97A46;
+    --ink: #E8F0EB;
+    --ink-2: #A9B9B1;
+    --rule: #2E3E37;
+    --code-bg: #0B1310;
+    --code-ink: #DDE9E2;
+    --focus: #F0646B;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--linen);
+  color: var(--ink);
+  font: 400 1.125rem/1.6 var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--spool); text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+code { font-family: var(--mono); font-size: 0.88em; }
+p code, li code { background: var(--linen-2); padding: 0.08em 0.35em; border-radius: 4px; }
+
+.wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+/* let grid columns shrink so wide code scrolls inside its box, not the page */
+.hero .wrap > *, .tool > *, .install-grid > *, .site-foot .wrap > *, .steps > *, .facts > * { min-width: 0; }
+
+/* ---------- running stitch: the page's one recurring device ---------- */
+.stitch {
+  height: 4px;
+  border: 0;
+  margin: 0;
+  background: repeating-linear-gradient(90deg, var(--thread) 0 18px, transparent 18px 30px);
+  border-radius: 2px;
+  opacity: 0.85;
+}
+
+/* ---------- header ---------- */
+.site-head { padding-block: 22px; }
+.site-head .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font: 600 1.4rem/1 var(--display); letter-spacing: 0.01em; }
+.brand img { width: 36px; height: 36px; }
+.head-link { font-weight: 500; }
+
+/* ---------- hero ---------- */
+.hero { padding-block: 40px 72px; }
+.hero .wrap { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; }
+.hero h1 {
+  font: 700 clamp(2.9rem, 6.4vw, 5.2rem)/0.95 var(--display);
+  letter-spacing: -0.01em;
+  margin: 0 0 24px;
+  max-width: 15.5ch;
+  text-wrap: balance;
+}
+.hero .lede { font-size: 1.3rem; line-height: 1.5; color: var(--ink-2); max-width: 34ch; margin: 0 0 32px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  font: 600 1.05rem/1 var(--body);
+  padding: 15px 22px; border-radius: 999px;
+  text-decoration: none; border: 2px solid var(--spool);
+}
+.btn-primary { background: var(--spool); color: var(--linen); }
+.btn-primary:hover { background: var(--spool-ink); border-color: var(--spool-ink); text-decoration: none; }
+.btn-quiet { color: var(--spool); }
+.btn-quiet:hover { background: var(--linen-2); text-decoration: none; }
+.btn svg { width: 20px; height: 20px; fill: currentColor; }
+.hero .fineprint { margin: 22px 0 0; font-size: 0.98rem; color: var(--ink-2); }
+
+.hoop { width: 100%; max-width: 440px; justify-self: center; }
+.hoop .sew { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: sew 2.6s cubic-bezier(.45,.05,.35,1) 0.4s forwards; }
+.hoop .needle { opacity: 0; animation: needle-in 0.5s ease 2.7s forwards; }
+@keyframes sew { to { stroke-dashoffset: 0; } }
+@keyframes needle-in { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .hoop .sew { animation: none; stroke-dashoffset: 0; }
+  .hoop .needle { animation: none; opacity: 1; }
+}
+
+/* ---------- sections ---------- */
+section { padding-block: 72px; }
+.section-head { max-width: 640px; margin-bottom: 40px; }
+h2 { font: 700 clamp(2.2rem, 4.4vw, 3.3rem)/1 var(--display); margin: 0 0 14px; letter-spacing: -0.005em; }
+h3 { font: 600 2rem/1.05 var(--display); margin: 0 0 10px; }
+.section-head p { margin: 0; color: var(--ink-2); font-size: 1.2rem; }
+
+/* ---------- the four tools ---------- */
+.tools { background: var(--paper); }
+.tool { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 48px; align-items: center; padding-block: 52px; }
+.tool + .stitch { margin-block: 0; }
+.where { font: 600 1.05rem/1.2 var(--body); color: var(--thread); margin: 0 0 8px; }
+.tool p { margin: 0 0 16px; max-width: 46ch; }
+.tool ul { margin: 0 0 20px; padding-left: 1.1em; max-width: 46ch; }
+.tool li { margin-bottom: 6px; }
+.tool li::marker { color: var(--thread); }
+.more { font-weight: 500; }
+
+.cmd {
+  position: relative;
+  display: flex; align-items: center; gap: 12px;
+  background: var(--code-bg); color: var(--code-ink);
+  border-radius: 10px; padding: 12px 12px 12px 16px;
+  font: 0.95rem/1.4 var(--mono);
+  max-width: 100%;
+}
+.cmd code { flex: 1; overflow-x: auto; white-space: pre; font-size: inherit; }
+.copy {
+  flex: none; font: 600 0.82rem/1 var(--body); color: var(--code-ink);
+  background: transparent; border: 1px solid rgba(230,239,233,0.35); border-radius: 6px;
+  padding: 7px 10px; cursor: pointer;
+}
+.copy:hover { border-color: var(--code-ink); }
+
+.shot { border-radius: 12px; box-shadow: 0 1px 0 var(--rule), 0 18px 40px -22px rgba(22,35,30,0.45); background: #fff; }
+.shot-pair { position: relative; padding: 0 0 56px 0; }
+.shot-pair .shot:first-child { width: 78%; }
+.shot-pair .shot:last-child { width: 72%; position: absolute; right: 0; bottom: 0; }
+
+/* Finder mock (recreated with the Quick Action's real dialog text) */
+.finder-demo { position: relative; padding-top: 8px; }
+.ctx {
+  width: 250px; background: rgba(246,246,246,0.96); color: #1d1d1f;
+  border-radius: 9px; padding: 5px; font: 13.5px/1.35 -apple-system, "SF Pro Text", system-ui, sans-serif;
+  box-shadow: 0 0 0 0.5px rgba(0,0,0,0.25), 0 12px 30px -8px rgba(0,0,0,0.35);
+}
+.ctx div { padding: 3px 10px; border-radius: 5px; display: flex; justify-content: space-between; }
+.ctx hr { border: 0; border-top: 1px solid rgba(0,0,0,0.12); margin: 4px 8px; }
+.ctx .hl { background: #2a6fdb; color: #fff; }
+.ctx-row { display: flex; align-items: flex-start; gap: 4px; }
+.ctx.sub { width: 190px; margin-top: 106px; }
+.mac-dialog {
+  margin: 22px 0 0 auto; width: min(430px, 100%); position: relative;
+  background: #ececec; color: #1d1d1f; border-radius: 12px; padding: 20px 20px 16px;
+  font: 13px/1.45 -apple-system, "SF Pro Text", system-ui, sans-serif;
+  box-shadow: 0 0 0 0.5px rgba(0,0,0,0.25), 0 24px 50px -12px rgba(0,0,0,0.45);
+}
+.mac-dialog .t { font-weight: 700; margin-bottom: 10px; }
+.mac-dialog .ok { color: #1f7a4d; }
+.mac-dialog .no { color: #b3261e; }
+.mac-dialog .b { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.mac-dialog .b span { background: #fff; border-radius: 6px; padding: 3px 12px; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2), 0 1px 1px rgba(0,0,0,0.08); }
+.mac-dialog .b .def { background: #2a6fdb; color: #fff; }
+
+.term {
+  background: var(--code-bg); color: var(--code-ink); border-radius: 12px; padding: 18px 20px;
+  font: 0.92rem/1.6 var(--mono); overflow-x: auto; white-space: pre;
+  box-shadow: 0 18px 40px -22px rgba(0,0,0,0.6);
+}
+.term .p { color: #7CC3A8; }
+.term .dim { color: #8FA39A; }
+
+/* ---------- how it works ---------- */
+.steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; counter-reset: step; margin: 0; padding: 0; list-style: none; }
+.steps li { counter-increment: step; position: relative; padding-top: 58px; }
+.steps li::before {
+  content: counter(step);
+  position: absolute; top: 0; left: 0;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: grid; place-items: center;
+  font: 700 1.5rem/1 var(--display); color: var(--linen); background: var(--spool);
+}
+.steps h3 { font-size: 1.8rem; }
+.steps p { margin: 0; color: var(--ink-2); max-width: 44ch; }
+.facts { margin-top: 56px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.facts h4 { font: 600 1.3rem/1.1 var(--display); margin: 0 0 6px; }
+.facts p { margin: 0; color: var(--ink-2); font-size: 1.02rem; }
+
+/* ---------- install ---------- */
+.install { background: var(--paper); }
+.install-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: start; }
+.install .term { font-size: 0.86rem; }
+.reqs { margin: 0; padding-left: 1.1em; }
+.reqs li { margin-bottom: 10px; }
+.reqs li::marker { color: var(--thread); }
+.note { margin-top: 20px; padding: 16px 18px; border-left: 4px solid var(--wood); background: var(--linen); border-radius: 0 8px 8px 0; font-size: 1.02rem; }
+
+/* ---------- footer ---------- */
+.site-foot { padding-block: 48px 64px; color: var(--ink-2); font-size: 0.98rem; }
+.site-foot .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.site-foot p { margin: 0 0 10px; max-width: 60ch; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  .hero .wrap, .tool, .install-grid, .site-foot .wrap { grid-template-columns: 1fr; }
+  .hero { padding-top: 16px; }
+  .hoop { max-width: 340px; order: -1; justify-self: start; }
+  .tool { gap: 28px; padding-block: 44px; }
+  .facts { grid-template-columns: 1fr; gap: 24px; }
+}
+@media (max-width: 640px) {
+  body { font-size: 1.06rem; }
+  .steps { grid-template-columns: 1fr; }
+  .hero .lede { font-size: 1.15rem; }
+  .shot-pair { padding: 0; }
+  .shot-pair .shot:first-child, .shot-pair .shot:last-child { width: 100%; position: static; }
+  .shot-pair .shot:last-child { margin-top: 14px; }
+  .ctx-row { display: none; }
+  .mac-dialog { margin: 0; }
+  section { padding-block: 56px; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="img/icon-256.png" alt="" width="36" height="36">Mac Stitch Drop</a>
+    <a class="head-link" href="https://github.com/george-vice/mac-stitch-drop">GitHub</a>
+  </div>
+</header>
+
+<main>
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap">
+    <div>
+      <h1 id="hero-title">Send embroidery designs from your Mac to your Brother machine</h1>
+      <p class="lede">Over Wi‑Fi, with no USB stick and no Windows PC. Right-click a file in Finder, or send straight from Ink/Stitch.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="https://github.com/george-vice/mac-stitch-drop">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          Get it on GitHub
+        </a>
+        <a class="btn btn-quiet" href="#ways">See the four ways to send</a>
+      </div>
+      <p class="fineprint">Free and open source (MIT). Tested on the Brother SE700.</p>
+    </div>
+
+    <svg class="hoop" viewBox="0 0 400 420" role="img" aria-label="An embroidery hoop with a red running stitch being sewn across the fabric">
+      <defs>
+        <clipPath id="fabric"><circle cx="200" cy="225" r="150"/></clipPath>
+        <mask id="reveal">
+          <path class="sew" pathLength="1000" d="M86 268 C 120 150, 178 150, 190 228 S 262 320, 292 214 S 318 150, 312 142" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round"/>
+        </mask>
+      </defs>
+      <ellipse cx="200" cy="395" rx="150" ry="12" fill="currentColor" opacity="0.08"/>
+      <circle cx="200" cy="225" r="150" fill="var(--paper)"/>
+      <g clip-path="url(#fabric)" opacity="0.5">
+        <path d="M50 160 H350 M50 200 H350 M50 240 H350 M50 280 H350 M50 320 H350 M130 75 V375 M170 75 V375 M210 75 V375 M250 75 V375 M290 75 V375" stroke="var(--rule)" stroke-width="1"/>
+      </g>
+      <path mask="url(#reveal)" d="M86 268 C 120 150, 178 150, 190 228 S 262 320, 292 214 S 318 150, 312 142" fill="none" stroke="var(--thread)" stroke-width="9" stroke-linecap="round" stroke-dasharray="20 14"/>
+      <circle cx="200" cy="225" r="162" fill="none" stroke="var(--wood)" stroke-width="22"/>
+      <circle cx="200" cy="225" r="174" fill="none" stroke="var(--wood-dark)" stroke-width="3" opacity="0.6"/>
+      <g class="needle">
+        <line x1="312" y1="142" x2="372" y2="62" stroke="var(--ink-2)" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="368" cy="67" rx="4" ry="9" transform="rotate(37 368 67)" fill="none" stroke="var(--ink-2)" stroke-width="3"/>
+        <path d="M312 142 C 330 120, 360 110, 378 52" fill="none" stroke="var(--thread)" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <g transform="rotate(-38 200 225)">
+        <rect x="186" y="44" width="28" height="34" rx="4" fill="var(--wood-dark)"/>
+        <rect x="160" y="54" width="80" height="8" rx="4" fill="var(--ink-2)"/>
+        <circle cx="244" cy="58" r="11" fill="var(--ink-2)"/>
+        <circle cx="244" cy="58" r="4" fill="var(--paper)"/>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<section class="tools" id="ways" aria-labelledby="ways-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="ways-title">Four ways to send</h2>
+      <p>Install whichever fits how you work, or all four. They share one saved machine, so once one of them finds your machine, they all know it.</p>
+    </div>
+
+    <hr class="stitch">
+
+    <article class="tool">
+      <div>
+        <p class="where">From Finder</p>
+        <h3>Right-click, Send to Brother</h3>
+        <p>Select files, right-click, and choose <b>Quick Actions → Send to Brother</b>. It finds your machine, shows what will be sent and what won’t, then sends when you press Send.</p>
+        <ul>
+          <li>Sends <code>.pes</code> <code>.dst</code> <code>.phc</code> <code>.phx</code> <code>.pen</code> as they are</li>
+          <li>Ink/Stitch <code>.svg</code> files are stitched for you first</li>
+          <li>Several files at once</li>
+        </ul>
+        <div class="cmd"><code>bash install.sh quickaction</code><button class="copy" type="button">Copy</button></div>
+        <p class="more" style="margin-top:14px"><a href="https://github.com/george-vice/mac-stitch-drop/tree/main/quickaction">Quick Action guide</a></p>
+      </div>
+      <div class="finder-demo" aria-label="Finder right-click menu showing Quick Actions, Send to Brother, and the confirmation dialog it opens">
+        <div class="ctx-row" aria-hidden="true">
+          <div class="ctx">
+            <div>Open</div><div>Open With</div><hr>
+            <div>Get Info</div><div>Rename</div><div>Compress “Driver Cover.pes”</div><hr>
+            <div class="hl">Quick Actions <span>›</span></div>
+          </div>
+          <div class="ctx sub"><div>Rotate Left</div><div class="hl">Send to Brother</div></div>
+        </div>
+        <div class="mac-dialog" role="img" aria-label="Dialog: Send to SE700 at 192.168.1.50? Two designs will be sent. huge.pes won't be sent because it is too big for the 100 by 100 millimetre hoop.">
+          <div class="t">Send to SE700 at 192.168.1.50?</div>
+          <div class="ok">✓ Driver_Cover.pes · 80×40 mm · 1.1 KB</div>
+          <div class="ok">✓ initials.pes · 85×42 mm · 1.1 KB</div>
+          <div style="margin-top:8px">Won’t be sent:</div>
+          <div class="no">✗ huge.pes — Too big: the design is 160 × 40 mm, the hoop area is 100 × 100 mm.</div>
+          <div class="b"><span>Cancel</span><span>Change machine…</span><span class="def">Send</span></div>
+        </div>
+      </div>
+    </article>
+
+    <hr class="stitch">
+
+    <article class="tool">
+      <div>
+        <p class="where">From Inkscape</p>
+        <h3>Send straight from Ink/Stitch</h3>
+        <p>Finish a design and choose <b>Extensions → Ink/Stitch → Visualize and Export → Send to Brother Machine</b>. No saving, no exporting, no file to find.</p>
+        <ul>
+          <li>Find your machine, then send: two steps in one window</li>
+          <li>Checks the design fits your hoop before it goes</li>
+          <li>Send only the selected objects if you like</li>
+        </ul>
+        <div class="cmd"><code>bash install.sh inkstitch</code><button class="copy" type="button">Copy</button></div>
+        <p class="more" style="margin-top:14px"><a href="https://github.com/george-vice/mac-stitch-drop/tree/main/inkstitch">Ink/Stitch extension guide</a></p>
+      </div>
+      <div class="shot-pair">
+        <img class="shot" src="img/wizard-find.png" width="1040" height="704" loading="lazy" alt="Step 1 of 2, Find your embroidery machine: found SE700 at 192.168.1.50 with a 100 by 100 millimetre area and 878 KB free.">
+        <img class="shot" src="img/wizard-send.png" width="1040" height="650" loading="lazy" alt="Step 2 of 2, Send your design: Driver_Cover, 85 by 42 millimetres, fits the 100 by 100 millimetre embroidery area, with a Send to machine button.">
+      </div>
+    </article>
+
+    <hr class="stitch">
+
+    <article class="tool">
+      <div>
+        <p class="where">From the Dock</p>
+        <h3>A window you drop files on</h3>
+        <p>Click StitchDrop in your Dock. It finds your machine, shows how much memory is free, and sends whatever you drop on it.</p>
+        <ul>
+          <li>Built on your Mac by the installer, so macOS doesn’t block it</li>
+          <li>Quits by itself when you close the window</li>
+        </ul>
+        <div class="cmd"><code>bash install.sh app</code><button class="copy" type="button">Copy</button></div>
+        <p class="more" style="margin-top:14px"><a href="https://github.com/george-vice/mac-stitch-drop/tree/main/app">StitchDrop.app guide</a></p>
+      </div>
+      <img class="shot" src="img/stitchdrop-app.png" width="1240" height="1174" loading="lazy" alt="StitchDrop window: connected to SE700 at 192.168.1.50 with 879 KB free, a drop area for .pes files, and two files marked Sent.">
+    </article>
+
+    <hr class="stitch">
+
+    <article class="tool">
+      <div>
+        <p class="where">From Terminal</p>
+        <h3>The <code style="font-size:0.85em">stitchdrop</code> command</h3>
+        <p>Scan for machines, check free memory, and send files from a script. Handy for automation and for troubleshooting.</p>
+        <div class="cmd"><code>bash install.sh cli</code><button class="copy" type="button">Copy</button></div>
+        <p class="more" style="margin-top:14px"><a href="https://github.com/george-vice/mac-stitch-drop/tree/main/cli">Command-line guide</a></p>
+      </div>
+<pre class="term" aria-label="Terminal example"><span class="p">$</span> stitchdrop scan
+Scanning 192.168.1.0/24 (254 addresses)…
+  ✓ 192.168.1.50  name='SE700'  fw=1.10
+
+<span class="p">$</span> stitchdrop send 192.168.1.50 driver-cover.pes
+  ✓ sent driver-cover.pes (14,322 bytes)
+<span class="dim">Done. On the SE700, open the embroidery screen
+and pick the Wi-Fi/received designs.</span></pre>
+    </article>
+  </div>
+</section>
+
+<section aria-labelledby="how-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="how-title">How sending works</h2>
+      <p>Every tool follows the same two steps.</p>
+    </div>
+    <ol class="steps">
+      <li>
+        <h3>Find your machine</h3>
+        <p>It tries the machine you used last. If that one doesn’t answer, it searches your Wi‑Fi for Brother machines. You can also type the IP address the machine shows under Settings → Wireless LAN.</p>
+      </li>
+      <li>
+        <h3>Check and send</h3>
+        <p>Before anything goes over, it checks the design against the machine: does it fit the hoop, and is there enough memory? Then it sends, and you choose the design on the machine’s embroidery screen.</p>
+      </li>
+    </ol>
+    <div class="facts">
+      <div>
+        <h4>Talks to the machine directly</h4>
+        <p>It uses the same local Wi‑Fi protocol as Brother’s Windows-only Design Database Transfer app. Nothing goes through the cloud.</p>
+      </div>
+      <div>
+        <h4>Remembers your machine</h4>
+        <p>One saved machine is shared by all four tools, in <code>~/.stitchdrop.json</code>.</p>
+      </div>
+      <div>
+        <h4>Uses your Ink/Stitch</h4>
+        <p><code>.svg</code> designs are stitched by your own Ink/Stitch, so they come out exactly as Save As → PES would make them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="install" id="install" aria-labelledby="install-title">
+  <div class="wrap install-grid">
+    <div>
+      <h2 id="install-title">Install</h2>
+      <p style="color:var(--ink-2);margin:0 0 22px">Open Terminal and run:</p>
+<pre class="term"><span class="p">$</span> git clone https://github.com/george-vice/mac-stitch-drop.git
+<span class="p">$</span> cd mac-stitch-drop
+<span class="p">$</span> bash install.sh quickaction   <span class="dim"># or inkstitch, app, cli, all</span></pre>
+      <p style="margin:18px 0 0">No git? <a href="https://github.com/george-vice/mac-stitch-drop/archive/refs/heads/main.zip">Download the ZIP</a>, unzip it, and run the last line from inside the folder.</p>
+    </div>
+    <div>
+      <h3 style="font-size:1.7rem">You’ll need</h3>
+      <ul class="reqs">
+        <li>macOS 11 or newer with Python 3. Your Mac offers to install it the first time you type <code>python3</code> in Terminal.</li>
+        <li>A Brother or Baby Lock Wi‑Fi embroidery machine that works with Brother’s Design Database Transfer app. Tested on the SE700.</li>
+        <li>For <code>.svg</code> designs: <a href="https://inkscape.org">Inkscape</a> with <a href="https://inkstitch.org">Ink/Stitch</a>.</li>
+      </ul>
+      <p class="note">The first time you send, macOS asks to allow access to devices on your local network. Choose <b>Allow</b>, or your machine can’t be found.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div>
+      <p><b>Mac Stitch Drop</b> is free and open source under the <a href="https://github.com/george-vice/mac-stitch-drop/blob/main/LICENSE">MIT license</a>. Tried it on another machine? <a href="https://github.com/george-vice/mac-stitch-drop/issues">Tell us how it went</a>.</p>
+      <p>The protocol details come from the open-source work in <a href="https://github.com/EmberSoftwareInc/ember-bridge">Ember Bridge</a> and <a href="https://github.com/Kadwood/lilo">Lilo</a>. The PES layout follows <a href="https://github.com/EmbroidePy/pyembroidery">pyembroidery</a>.</p>
+    </div>
+    <div>
+      <p>An unofficial hobby project. Not affiliated with or endorsed by Brother Industries. Brother is a trademark of its owner and is named here only to say which machines this works with.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var text = btn.parentElement.querySelector('code').textContent;
+    var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1600); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { btn.textContent = 'Select and copy'; });
+    } else {
+      btn.textContent = 'Select and copy';
+    }
+  });
+});
+</script>
+</body>
+</html>

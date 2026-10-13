@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+    <name>Send to Brother Machine (Wi-Fi)</name>
+    <id>local.stitchdrop.send_to_brother</id>
+    <effect needs-live-preview="false" implements-custom-gui="true">
+        <object-type>all</object-type>
+        <effects-menu>
+            <submenu name="Ink/Stitch" translatable="no">
+                <submenu name="Visualize and Export"/>
+            </submenu>
+        </effects-menu>
+    </effect>
+    <script>
+        <command location="inx" interpreter="python">send_to_brother.py</command>
+    </script>
+</inkscape-extension>
